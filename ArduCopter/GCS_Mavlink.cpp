@@ -559,6 +559,11 @@ void GCS_MAVLINK_Copter::send_banner()
     send_text(MAV_SEVERITY_INFO, "Frame: %s", copter.get_frame_string());
 }
 
+// a RC override message is considered to be a 'heartbeat' from the ground station for failsafe purposes
+void GCS_MAVLINK_Copter::handleRCOverrideUpdateLastHeartbeat(uint32_t tnow)
+{
+    copter.failsafe.last_heartbeat_ms = tnow;
+}
 
 void GCS_MAVLINK_Copter::handle_command_ack(const mavlink_message_t* msg)
 {

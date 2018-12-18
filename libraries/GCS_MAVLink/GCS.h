@@ -127,6 +127,7 @@ public:
     AP_HAL::UARTDriver *get_uart() { return _port; }
 
     virtual uint8_t sysid_my_gcs() const = 0;
+    virtual void handleRCOverrideUpdateLastHeartbeat(uint32_t tnow) = 0;
 
     static const struct AP_Param::GroupInfo        var_info[];
 
@@ -337,6 +338,7 @@ protected:
     virtual bool should_zero_rc_outputs_on_reboot() const { return false; }
     MAV_RESULT handle_preflight_reboot(const mavlink_command_long_t &packet);
     void disable_overrides();
+    
 
     // reset a message interval via mavlink:
     MAV_RESULT handle_command_set_message_interval(const mavlink_command_long_t &packet);

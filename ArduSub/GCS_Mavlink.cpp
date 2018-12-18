@@ -56,7 +56,6 @@ MAV_MODE GCS_MAVLINK_Sub::base_mode() const
     _base_mode |= MAV_MODE_FLAG_MANUAL_INPUT_ENABLED;
 
     if (sub.motors.armed()) {
-        _base_mode |= MAV_MODE_FLAG_SAFETY_ARMED;
     }
 
     // indicate we have set a custom mode
@@ -859,32 +858,7 @@ void GCS_MAVLINK_Sub::handleMessage(mavlink_message_t* msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE: {     // MAV ID: 70
-        // allow override of RC input
-        if (msg->sysid != sub.g.sysid_my_gcs) {
-            break;    // Only accept control from our gcs
-        }
-
-        uint32_t tnow = AP_HAL::millis();
-
-        mavlink_rc_channels_override_t packet;
-        mavlink_msg_rc_channels_override_decode(msg, &packet);
-
-        RC_Channels::set_override(0, packet.chan1_raw, tnow);
-        RC_Channels::set_override(1, packet.chan2_raw, tnow);
-        RC_Channels::set_override(2, packet.chan3_raw, tnow);
-        RC_Channels::set_override(3, packet.chan4_raw, tnow);
-        RC_Channels::set_override(4, packet.chan5_raw, tnow);
-        RC_Channels::set_override(5, packet.chan6_raw, tnow);
-        RC_Channels::set_override(6, packet.chan7_raw, tnow);
-        RC_Channels::set_override(7, packet.chan8_raw, tnow);
-
-        sub.failsafe.last_pilot_input_ms = tnow;
-        // a RC override message is considered to be a 'heartbeat' from the ground station for failsafe purposes
-        sub.failsafe.last_heartbeat_ms = tnow;
-        break;
-    }
-
+    
     case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET: { // MAV ID: 82
         // decode packet
         mavlink_set_attitude_target_t packet;
@@ -1123,6 +1097,13 @@ void GCS_MAVLINK_Sub::handleMessage(mavlink_message_t* msg)
         break;
     }     // end switch
 } // end handle mavlink
+
+
+// a RC override message is considered to be a 'heartbeat' from the ground station for failsafe purposes
+void GCS_MAVLINK_Sub::handleRCOverrideUpdateLastHeartbeat(uint32_t tnow)
+{
+    sub.failsafe.last_heartbeat_ms = tnow;
+}
 
 
 /*
